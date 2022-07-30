@@ -1,0 +1,13 @@
+[package]
+name = "integrator"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+odd-api = { path = "../odd-api" }
+even-api = { path = "../even-api" }
+odd-impl = { path = "../odd-impl" }
+even-impl = { path = "../even-impl" }
+viu = { git = "https://github.com/TOETOE55/viu.git", branch = "fix/macro_expanded_macro_exports_accessed_by_absolute_paths"}

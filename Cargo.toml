@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "odd-api",
+    "odd-impl",
+    "even-api",
+    "even-impl",
+    "integrator"
+]
