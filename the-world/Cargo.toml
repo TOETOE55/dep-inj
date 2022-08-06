@@ -1,5 +1,5 @@
 [package]
-name = "integrator"
+name = "the-world"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,7 +8,4 @@ edition = "2021"
 [dependencies]
 odd-api = { path = "../odd-api" }
 even-api = { path = "../even-api" }
-odd-impl = { path = "../odd-impl" }
-even-impl = { path = "../even-impl" }
-the-world = { path = "../the-world" }
 dyn-clone = "1.0"

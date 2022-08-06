@@ -4,5 +4,6 @@ members = [
     "odd-impl",
     "even-api",
     "even-impl",
-    "integrator"
+    "integrator",
+    "the-world",
 ]

@@ -1,27 +1,29 @@
+
+use std::sync::atomic::{AtomicU64, Ordering};
+use the_world::ContainerRef;
+
 #[derive(Default)]
 pub struct EvenState {
-    count: u64,
+    count: AtomicU64,
 }
 
 impl EvenState {
     pub fn count(&self) -> u64 {
-        self.count
+        self.count.load(Ordering::Relaxed)
     }
 }
 
+
 /// workaround for cyclic deps between the crates
-pub struct EvenApp<Ctx>(pub Ctx);
+#[derive(Clone)]
+pub struct EvenApp(pub ContainerRef<EvenState>);
 
 
-impl<Ctx: AsMut<EvenState>> even_api::Even for EvenApp<&mut Ctx>
-where
-    // addition dependency
-    Ctx: odd_api::Odd
-{
-    fn is_even(&mut self, n: u64) -> bool {
-        self.0.as_mut().count += 1;
+impl even_api::Even for EvenApp {
+    fn is_even(&self, n: u64) -> bool {
+        self.0.count.fetch_add(1, Ordering::SeqCst);
 
-        (n == 0) || self.0.is_odd(n - 1)
+        (n == 0) || self.0.the_world().is_odd(n - 1)
     }
 }
 
