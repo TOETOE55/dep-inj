@@ -1,3 +1,4 @@
-pub trait Odd {
-    fn is_odd(&mut self, n: u64) -> bool;
+use std::sync::Arc;
+pub trait IsOdd {
+    fn is_odd(self: Arc<Self>, n: u64) -> bool;
 }
