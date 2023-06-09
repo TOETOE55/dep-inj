@@ -1,3 +1,4 @@
+use crate::macro_expended::{DynEvenApp, EvenAppCtx};
 use even_api::IsEven;
 use odd_api::IsOdd;
 use std::{
@@ -26,6 +27,7 @@ pub struct EvenApp<Ctx: ?Sized>(
 );
 
 // 展开成:
+#[allow(dead_code)]
 mod macro_expended {
     use super::{Arc, Deref, EvenApp, EvenState, IsOdd};
     // 防止用户添加实现
@@ -72,14 +74,13 @@ mod macro_expended {
             self.into_arc().is_odd(n)
         }
     }
-}
 
-// just an alias for easier coding
-// trait EvenAppCtx = AsRef<EvenState> + IsOdd + Send + Sync + 'static;
-//
-// * 不同模块若依赖不同的service可以定义不同的Ctx
-trait EvenAppCtx: AsRef<EvenState> + IsOdd + Send + Sync + 'static {}
-impl<T: AsRef<EvenState> + IsOdd + Send + Sync + 'static> EvenAppCtx for T {}
+    // 为了方便使用的一个Ctx，会包含所有注入的依赖
+    pub(crate) trait EvenAppCtx: AsRef<EvenState> + IsOdd + Send + Sync + 'static {}
+    impl<T: AsRef<EvenState> + IsOdd + Send + Sync + 'static> EvenAppCtx for T {}
+
+    pub(crate) type DynEvenApp = EvenApp<dyn EvenAppCtx>;
+}
 
 impl<Ctx: EvenAppCtx> IsEven for EvenApp<Ctx> {
     fn is_even(self: Arc<Self>, n: u64) -> bool {
@@ -95,9 +96,8 @@ impl<Ctx: EvenAppCtx> IsEven for EvenApp<Ctx> {
     }
 }
 
-// 此处不依赖带泛型方法的service
-// Ctx = dyn EvenAppCtx有利于编译速度
-fn is_even_impl(app: Arc<EvenApp<dyn EvenAppCtx>>, n: u64) -> bool {
+// 此处不依赖带泛型方法的service，使用DynApp有利于编译速度
+fn is_even_impl(app: Arc<DynEvenApp>, n: u64) -> bool {
     *app.count.lock().unwrap() += 1;
 
     (n == 0) || app.is_odd(n - 1) // 因为app已经注入了IsOdd，所以可以直接使用is_odd方法

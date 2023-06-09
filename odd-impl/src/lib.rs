@@ -1,3 +1,4 @@
+use crate::macro_expended::OddAppCtx;
 use even_api::IsEven;
 use odd_api::IsOdd;
 use std::{
@@ -14,6 +15,7 @@ pub struct OddState {
 // 解释同even_impl
 #[repr(transparent)]
 pub struct OddApp<Ctx: ?Sized>(Ctx);
+#[allow(dead_code)]
 mod macro_expended {
     use super::{Arc, Deref, OddApp, OddState};
     use even_api::IsEven;
@@ -67,11 +69,12 @@ mod macro_expended {
             self.into_ref().emit_count(f)
         }
     }
-}
 
-// 解释同even_impl
-pub trait OddAppCtx: AsRef<OddState> + IsEven + Send + Sync + 'static {}
-impl<T: AsRef<OddState> + IsEven + Send + Sync + 'static> OddAppCtx for T {}
+    pub(crate) trait OddAppCtx: AsRef<OddState> + IsEven + Send + Sync + 'static {}
+    impl<T: AsRef<OddState> + IsEven + Send + Sync + 'static> OddAppCtx for T {}
+
+    pub(crate) type DynOddApp = OddApp<dyn OddAppCtx>;
+}
 
 impl<Ctx: OddAppCtx> IsOdd for OddApp<Ctx> {
     #[inline]
@@ -80,7 +83,7 @@ impl<Ctx: OddAppCtx> IsOdd for OddApp<Ctx> {
     }
 }
 
-// 这里需要到泛型方法`emit_count`，所以这里不能用`OddApp<dyn OddAppCtx>`
+// 这里需要到泛型方法`emit_count`，所以这里不能用`DynOddApp`
 fn is_odd_impl<Ctx: OddAppCtx>(app: Arc<OddApp<Ctx>>, n: u64) -> bool {
     *app.count.lock().unwrap() += 1;
 
