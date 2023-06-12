@@ -46,7 +46,7 @@ use syn::{parse_macro_input, parse_quote};
 /// impl<T, Deps: Into<FooState<T>>> From<Foo<T, Deps>> for FooState<T> {
 ///     #[inline]
 ///     fn from(value: Foo<T, Deps>) -> Self {
-///         value.deps.into()
+///         value.into_inner().into()
 ///     }
 /// }
 ///

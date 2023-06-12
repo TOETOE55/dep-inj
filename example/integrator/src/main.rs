@@ -6,7 +6,7 @@ use odd_api::IsOdd;
 use odd_impl::{OddApp, OddState};
 
 // 将所有的State管理起来
-// 实现所有的Service，以及AsRef<XXState>
+// 实现所有的trait，以及AsRef<XXState>
 #[derive(Default, Debug)]
 pub struct GlobalStruct {
     // 可以是lazy的field

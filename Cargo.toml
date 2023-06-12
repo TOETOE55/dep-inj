@@ -1,10 +1,10 @@
 [workspace]
 members = [
-    "odd-api",
-    "odd-impl",
-    "even-api",
-    "even-impl",
-    "integrator",
+    "example/odd-api",
+    "example/odd-impl",
+    "example/even-api",
+    "example/even-impl",
+    "example/integrator",
     "dep-inj",
 ]
 
