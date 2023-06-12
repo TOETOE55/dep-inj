@@ -14,7 +14,7 @@ pub struct GlobalStruct {
     even_state: EvenState,
 }
 
-mod macro_expanded {
+mod boilerplate {
     use super::{Arc, EvenApp, EvenState, GlobalStruct, IsEven, IsOdd, OddApp, OddState};
     impl AsRef<OddState> for GlobalStruct {
         fn as_ref(&self) -> &OddState {
@@ -31,14 +31,14 @@ mod macro_expanded {
     impl IsOdd for GlobalStruct {
         #[inline]
         fn is_odd(self: Arc<Self>, n: u64) -> bool {
-            OddApp::from_arc(self).is_odd(n)
+            OddApp::inj_arc(self).is_odd(n)
         }
     }
 
     impl IsEven for GlobalStruct {
         #[inline]
         fn is_even(self: Arc<Self>, n: u64) -> bool {
-            EvenApp::from_arc(self).is_even(n)
+            EvenApp::inj_arc(self).is_even(n)
         }
 
         #[inline]
@@ -46,7 +46,7 @@ mod macro_expanded {
         where
             F: FnOnce(usize),
         {
-            EvenApp::from_ref(self).emit_count(f)
+            EvenApp::inj_ref(self).emit_count(f)
         }
     }
 }

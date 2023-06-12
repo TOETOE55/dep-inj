@@ -4,5 +4,9 @@ members = [
     "odd-impl",
     "even-api",
     "even-impl",
-    "integrator"
+    "integrator",
+    "dep-inj",
 ]
+
+[patch.crates-io]
+dep-inj = { path = "dep-inj"}

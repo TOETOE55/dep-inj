@@ -1,82 +1,23 @@
-use crate::macro_expended::OddAppCtx;
 use even_api::IsEven;
 use odd_api::IsOdd;
 use std::{
     fmt::Debug,
-    ops::Deref,
     sync::{Arc, Mutex},
 };
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, dep_inj::DepInj)]
+#[target(OddApp)]
 pub struct OddState {
     count: Mutex<usize>,
 }
 
-// 解释同even_impl
-#[repr(transparent)]
-pub struct OddApp<Ctx: ?Sized>(Ctx);
-#[allow(dead_code)]
-mod macro_expended {
-    use super::{Arc, Deref, OddApp, OddState};
-    use even_api::IsEven;
-    // 防止用户添加实现
-    impl<Ctx: ?Sized> Drop for OddApp<Ctx> {
-        fn drop(&mut self) {
-            // 不应该有任何实现
-        }
-    }
+pub(crate) trait OddAppDeps: AsRef<OddState> + IsEven + Send + Sync + 'static {}
+impl<T: AsRef<OddState> + IsEven + Send + Sync + 'static> OddAppDeps for T {}
 
-    impl<Ctx: ?Sized> OddApp<Ctx> {
-        #[inline]
-        pub fn from_ref(ctx: &Ctx) -> &Self {
-            unsafe { &*(ctx as *const Ctx as *const _) }
-        }
+#[allow(unused)]
+pub(crate) type DynOddApp = OddApp<dyn OddAppDeps>;
 
-        #[inline]
-        pub fn into_ref(&self) -> &Ctx {
-            unsafe { &*(self as *const Self as *const _) }
-        }
-
-        #[inline]
-        pub fn from_arc(ctx: Arc<Ctx>) -> Arc<Self> {
-            unsafe { Arc::from_raw(Arc::into_raw(ctx) as *const Self) }
-        }
-
-        #[inline]
-        pub fn into_arc(self: Arc<Self>) -> Arc<Ctx> {
-            unsafe { Arc::from_raw(Arc::into_raw(self) as *const Ctx) }
-        }
-    }
-
-    impl<Ctx: AsRef<OddState> + ?Sized> Deref for OddApp<Ctx> {
-        type Target = OddState;
-        #[inline]
-        fn deref(&self) -> &Self::Target {
-            self.0.as_ref()
-        }
-    }
-
-    impl<Ctx: IsEven + ?Sized> IsEven for OddApp<Ctx> {
-        #[inline]
-        fn is_even(self: Arc<Self>, n: u64) -> bool {
-            self.into_arc().is_even(n)
-        }
-        #[inline]
-        fn emit_count<F>(&self, f: F)
-        where
-            F: FnOnce(usize),
-        {
-            self.into_ref().emit_count(f)
-        }
-    }
-
-    pub(crate) trait OddAppCtx: AsRef<OddState> + IsEven + Send + Sync + 'static {}
-    impl<T: AsRef<OddState> + IsEven + Send + Sync + 'static> OddAppCtx for T {}
-
-    pub(crate) type DynOddApp = OddApp<dyn OddAppCtx>;
-}
-
-impl<Ctx: OddAppCtx> IsOdd for OddApp<Ctx> {
+impl<Ctx: OddAppDeps> IsOdd for OddApp<Ctx> {
     #[inline]
     fn is_odd(self: Arc<Self>, n: u64) -> bool {
         is_odd_impl(self, n)
@@ -84,15 +25,17 @@ impl<Ctx: OddAppCtx> IsOdd for OddApp<Ctx> {
 }
 
 // 这里需要到泛型方法`emit_count`，所以这里不能用`DynOddApp`
-fn is_odd_impl<Ctx: OddAppCtx>(app: Arc<OddApp<Ctx>>, n: u64) -> bool {
+fn is_odd_impl<Ctx: OddAppDeps>(app: Arc<OddApp<Ctx>>, n: u64) -> bool {
     *app.count.lock().unwrap() += 1;
 
     if n == 0 {
         return false;
     }
 
-    app.emit_count(|even_count| {
-        println!("IsEven::is_even was called {even_count} times");
+    app.deps_ref().emit_count(|even_count| {
+        if even_count > 100 {
+            println!("IsEven::is_even was called over {even_count} times");
+        }
     });
-    app.is_even(n - 1)
+    app.deps_arc().is_even(n - 1)
 }

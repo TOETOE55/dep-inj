@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 odd-api = { path = "../odd-api" }
 even-api = { path = "../even-api" }
+dep-inj = "0.1"
