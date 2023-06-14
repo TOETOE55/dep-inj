@@ -1,5 +1,5 @@
 [package]
-name = "integrator"
+name = "even-impl"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,6 +8,4 @@ edition = "2021"
 [dependencies]
 odd-api = { path = "../odd-api" }
 even-api = { path = "../even-api" }
-odd-impl = { path = "../odd-impl" }
-even-impl = { path = "../even-impl" }
-viu = { git = "https://github.com/TOETOE55/viu.git", branch = "fix/macro_expanded_macro_exports_accessed_by_absolute_paths"}
+dep-inj = "0.1"
