@@ -32,10 +32,10 @@ fn is_odd_impl<Ctx: OddAppDeps>(app: Arc<OddApp<Ctx>>, n: u64) -> bool {
         return false;
     }
 
-    app.deps_ref().emit_count(|even_count| {
+    app.prj_ref().emit_count(|even_count| {
         if even_count > 100 {
             println!("IsEven::is_even was called over {even_count} times");
         }
     });
-    app.deps_arc().is_even(n - 1)
+    app.prj_arc().is_even(n - 1)
 }

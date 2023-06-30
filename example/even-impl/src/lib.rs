@@ -41,5 +41,5 @@ impl<Ctx: EvenAppDeps> IsEven for EvenApp<Ctx> {
 fn is_even_impl(app: Arc<DynEvenApp>, n: u64) -> bool {
     *app.count.lock().unwrap() += 1;
 
-    (n == 0) || app.deps_arc().is_odd(n - 1)
+    (n == 0) || app.prj_arc().is_odd(n - 1)
 }
