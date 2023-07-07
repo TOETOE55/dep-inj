@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
 use even_api::IsEven;
-use even_impl::{EvenApp, EvenState};
+use even_impl::{EvenProxy, EvenState};
 use odd_api::IsOdd;
-use odd_impl::{OddApp, OddState};
+use odd_impl::{OddProxy, OddState};
 
 // 将所有的State管理起来
 // 实现所有的trait，以及AsRef<XXState>
@@ -15,7 +15,7 @@ pub struct GlobalStruct {
 }
 
 mod boilerplate {
-    use super::{Arc, EvenApp, EvenState, GlobalStruct, IsEven, IsOdd, OddApp, OddState};
+    use super::{Arc, EvenProxy, EvenState, GlobalStruct, IsEven, IsOdd, OddProxy, OddState};
     impl AsRef<OddState> for GlobalStruct {
         fn as_ref(&self) -> &OddState {
             &self.odd_state
@@ -31,14 +31,14 @@ mod boilerplate {
     impl IsOdd for GlobalStruct {
         #[inline]
         fn is_odd(self: Arc<Self>, n: u64) -> bool {
-            OddApp::inj_arc(self).is_odd(n)
+            OddProxy::inj_arc(self).is_odd(n)
         }
     }
 
     impl IsEven for GlobalStruct {
         #[inline]
         fn is_even(self: Arc<Self>, n: u64) -> bool {
-            EvenApp::inj_arc(self).is_even(n)
+            EvenProxy::inj_arc(self).is_even(n)
         }
 
         #[inline]
@@ -46,7 +46,7 @@ mod boilerplate {
         where
             F: FnOnce(usize),
         {
-            EvenApp::inj_ref(self).emit_count(f)
+            EvenProxy::inj_ref(self).emit_count(f)
         }
     }
 }

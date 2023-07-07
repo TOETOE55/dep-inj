@@ -1,3 +1,5 @@
+#![doc = include_str!("../../README.md")]
+
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use std::default::Default;
@@ -6,15 +8,21 @@ use syn::{parse_macro_input, parse_quote};
 ///
 ///
 /// ```
+/// # use dep_inj::DepInj;
+///
 /// #[derive(DepInj)]
 /// #[target(Foo)]
-/// struct FooState<T> {}
+/// struct FooState<T> {
+///     inner: T,
+/// }
 /// ```
 ///
 /// will expand to
 ///
 /// ```
-///
+/// # struct FooState<T> {
+/// #    inner: T,
+/// # }
 ///
 /// #[repr(transparent)]
 /// struct Foo<T, Deps: ?Sized> {

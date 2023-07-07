@@ -9,4 +9,4 @@ members = [
 ]
 
 [patch.crates-io]
-dep-inj = { path = "dep-inj"}
+dep-inj = { path = "dep-inj" }

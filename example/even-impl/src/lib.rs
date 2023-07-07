@@ -1,4 +1,3 @@
-// use crate::macro_expended::{DynEvenApp, EvenAppCtx};
 use dep_inj::DepInj;
 use even_api::IsEven;
 use odd_api::IsOdd;
@@ -8,22 +7,20 @@ use std::{
 };
 
 #[derive(Default, Debug, DepInj)]
-#[target(EvenApp)]
+#[target(EvenProxy)]
 pub struct EvenState {
     count: Mutex<usize>,
 }
 
 // just an alias for easier coding
-// trait EvenAppDeps = AsRef<EvenState> + IsOdd + Send + Sync + 'static;
-//
-// * 不同模块若依赖不同的trait可以定义不同的Deps
-pub(crate) trait EvenAppDeps: AsRef<EvenState> + IsOdd + Send + Sync + 'static {}
-impl<T: AsRef<EvenState> + IsOdd + Send + Sync + 'static> EvenAppDeps for T {}
+// `trait EvenDeps = AsRef<EvenState> + IsOdd + Send + Sync + 'static;`
+pub(crate) trait EvenDeps: AsRef<EvenState> + IsOdd + Send + Sync + 'static {}
+impl<T: AsRef<EvenState> + IsOdd + Send + Sync + 'static> EvenDeps for T {}
 
-// 使用dyn有利于编译速度
-pub(crate) type DynEvenApp = EvenApp<dyn EvenAppDeps>;
+// dyn may benefit compilation speed
+pub(crate) type DynEvenApp = EvenProxy<dyn EvenDeps>;
 
-impl<Ctx: EvenAppDeps> IsEven for EvenApp<Ctx> {
+impl<Ctx: EvenDeps> IsEven for EvenProxy<Ctx> {
     fn is_even(self: Arc<Self>, n: u64) -> bool {
         is_even_impl(self, n)
     }
@@ -32,12 +29,11 @@ impl<Ctx: EvenAppDeps> IsEven for EvenApp<Ctx> {
     where
         F: FnOnce(usize),
     {
-        // 输出一下调用次数
+        // emit call count
         f(*self.count.lock().unwrap());
     }
 }
 
-// 此处不依赖带泛型方法的service，使用DynApp有利于编译速度
 fn is_even_impl(app: Arc<DynEvenApp>, n: u64) -> bool {
     *app.count.lock().unwrap() += 1;
 
