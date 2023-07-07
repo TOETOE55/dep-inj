@@ -6,36 +6,36 @@ use std::{
 };
 
 #[derive(Default, Debug, dep_inj::DepInj)]
-#[target(OddApp)]
+#[target(OddProxy)]
 pub struct OddState {
     count: Mutex<usize>,
 }
 
-pub(crate) trait OddAppDeps: AsRef<OddState> + IsEven + Send + Sync + 'static {}
-impl<T: AsRef<OddState> + IsEven + Send + Sync + 'static> OddAppDeps for T {}
+pub(crate) trait OddDeps: AsRef<OddState> + IsEven + Send + Sync + 'static {}
+impl<T: AsRef<OddState> + IsEven + Send + Sync + 'static> OddDeps for T {}
 
 #[allow(unused)]
-pub(crate) type DynOddApp = OddApp<dyn OddAppDeps>;
+pub(crate) type DynOddProxy = OddProxy<dyn OddDeps>;
 
-impl<Ctx: OddAppDeps> IsOdd for OddApp<Ctx> {
+impl<Ctx: OddDeps> IsOdd for OddProxy<Ctx> {
     #[inline]
     fn is_odd(self: Arc<Self>, n: u64) -> bool {
         is_odd_impl(self, n)
     }
 }
 
-// 这里需要到泛型方法`emit_count`，所以这里不能用`DynOddApp`
-fn is_odd_impl<Ctx: OddAppDeps>(app: Arc<OddApp<Ctx>>, n: u64) -> bool {
+fn is_odd_impl<Ctx: OddDeps>(app: Arc<OddProxy<Ctx>>, n: u64) -> bool {
     *app.count.lock().unwrap() += 1;
 
     if n == 0 {
         return false;
     }
 
-    app.deps_ref().emit_count(|even_count| {
+    // `DynOddProxy` cannot call `emit_count`
+    app.prj_ref().emit_count(|even_count| {
         if even_count > 100 {
             println!("IsEven::is_even was called over {even_count} times");
         }
     });
-    app.deps_arc().is_even(n - 1)
+    app.prj_arc().is_even(n - 1)
 }

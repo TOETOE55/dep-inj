@@ -362,7 +362,7 @@ fn is_even_impl(
     proxy.count += 1;
 
     (n == 0) || proxy
-        .deps_ref_mut() 
+        .prj_ref_mut() 
         .is_odd(n - 1)
 }
 ```
