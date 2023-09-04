@@ -355,8 +355,11 @@ where
     }
 }
 
+trait EvenDeps: Odd + AsRef<EvenState> + AsMut<EvenState> {}
+impl<T: Odd + AsRef<EvenState> + AsMut<EvenState>> EvenDeps for T {}
+
 fn is_even_impl(
-    proxy: &mut EvenProxy<dyn Odd>,
+    proxy: &mut EvenProxy<dyn EvenDeps>,
     n: u64,
 ) -> bool {
     proxy.count += 1;
